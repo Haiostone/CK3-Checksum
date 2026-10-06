@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build exe
+        run: |
+          python -m pip install pyinstaller
+          python -m PyInstaller --onefile --console --name ck3-checksums --clean --noconfirm --exclude-module tkinter --exclude-module unittest --exclude-module pydoc --exclude-module email --exclude-module xml main.py
+
+      - name: Smoke test
+        run: |
+          "" | ./dist/ck3-checksums.exe --version
+          "" | ./dist/ck3-checksums.exe --help
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ck3-checksums
+          path: dist/ck3-checksums.exe
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" dist/ck3-checksums.exe --title "${{ github.ref_name }}" --generate-notes

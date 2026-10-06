@@ -1,8 +1,5 @@
 @echo off
-REM ---------------------------------------------------------------
-REM Builds ck3-checksums.exe -- run this ONCE on a Windows machine
-REM that has Python installed. The resulting .exe needs nothing.
-REM ---------------------------------------------------------------
+REM Builds dist\ck3-checksums.exe. Needs Python on PATH.
 setlocal
 
 where python >nul 2>&1
@@ -31,15 +28,11 @@ python -m PyInstaller ^
     --exclude-module pydoc ^
     --exclude-module email ^
     --exclude-module xml ^
-    ck3_playset_checksums.py
+    main.py
 if errorlevel 1 goto :failed
 
 echo.
-echo ================================================================
-echo  Done. The executable is here:
-echo    %CD%\dist\ck3-checksums.exe
-echo  Send that single file to the others - nothing else needed.
-echo ================================================================
+echo Done: %CD%\dist\ck3-checksums.exe
 pause
 exit /b 0
 
